@@ -1,4 +1,5 @@
-# WheelWise
+![Wise](https://github.com/user-attachments/assets/22abb1d8-86f3-431c-8358-24867c7e8979)
+
 
 [![Expo SDK](https://img.shields.io/badge/Expo%20SDK-52.0.30-blue.svg)](https://expo.dev/)
 [![React Native](https://img.shields.io/badge/React%20Native-0.74.6-green.svg)](https://reactnative.dev/)
