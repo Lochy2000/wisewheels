@@ -51,7 +51,6 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "18.2.20",
-    "npm-force-resolutions": "^0.0.10",
     "typescript": "~5.8.3"
   }
 }
