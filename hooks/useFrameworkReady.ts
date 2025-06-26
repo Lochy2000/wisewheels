@@ -17,5 +17,5 @@ export function useFrameworkReady() {
         console.warn('Framework ready hook error:', error);
       }
     }
-  }, []);
+  }); // Removed dependency array to restore original behavior
 }

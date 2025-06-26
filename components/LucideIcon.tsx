@@ -1,5 +1,7 @@
 import React from 'react';
 import { Platform } from 'react-native';
+import * as LucideReact from 'lucide-react';
+import * as LucideReactNative from 'lucide-react-native';
 
 interface IconProps {
   size?: number;
@@ -7,56 +9,61 @@ interface IconProps {
   strokeWidth?: number;
 }
 
-// Platform-specific icon imports
+// Platform-specific icon creation with static imports
 const createIcon = (iconName: string) => {
   const IconComponent = React.forwardRef<any, IconProps>((props, ref) => {
     const { size = 24, color = 'currentColor', strokeWidth = 2, ...rest } = props;
 
     if (Platform.OS === 'web') {
-      // Use lucide-react for web
-      try {
-        const LucideReact = require('lucide-react');
-        const WebIcon = LucideReact[iconName];
-        
-        if (!WebIcon) {
-          console.warn(`Icon ${iconName} not found in lucide-react`);
-          return null;
-        }
-
-        return React.createElement(WebIcon, {
+      // Use lucide-react for web with static import
+      const WebIcon = (LucideReact as any)[iconName];
+      
+      if (!WebIcon) {
+        console.warn(`Icon ${iconName} not found in lucide-react`);
+        // Return fallback icon instead of null
+        const FallbackIcon = LucideReact.AlertCircle;
+        return React.createElement(FallbackIcon, {
           ref,
           width: size,
           height: size,
-          color,
+          color: '#EF4444', // Red color to indicate missing icon
           strokeWidth,
           ...rest
         });
-      } catch (error) {
-        console.warn(`Error loading icon ${iconName}:`, error);
-        return null;
       }
-    } else {
-      // Use lucide-react-native for mobile
-      try {
-        const LucideReactNative = require('lucide-react-native');
-        const NativeIcon = LucideReactNative[iconName];
-        
-        if (!NativeIcon) {
-          console.warn(`Icon ${iconName} not found in lucide-react-native`);
-          return null;
-        }
 
-        return React.createElement(NativeIcon, {
+      return React.createElement(WebIcon, {
+        ref,
+        width: size,
+        height: size,
+        color,
+        strokeWidth,
+        ...rest
+      });
+    } else {
+      // Use lucide-react-native for mobile with static import
+      const NativeIcon = (LucideReactNative as any)[iconName];
+      
+      if (!NativeIcon) {
+        console.warn(`Icon ${iconName} not found in lucide-react-native`);
+        // Return fallback icon instead of null
+        const FallbackIcon = LucideReactNative.AlertCircle;
+        return React.createElement(FallbackIcon, {
           ref,
           size,
-          color,
+          color: '#EF4444', // Red color to indicate missing icon
           strokeWidth,
           ...rest
         });
-      } catch (error) {
-        console.warn(`Error loading icon ${iconName}:`, error);
-        return null;
       }
+
+      return React.createElement(NativeIcon, {
+        ref,
+        size,
+        color,
+        strokeWidth,
+        ...rest
+      });
     }
   });
 
