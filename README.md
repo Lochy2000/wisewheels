@@ -1,5 +1,6 @@
-![Wise](https://github.com/user-attachments/assets/22abb1d8-86f3-431c-8358-24867c7e8979)
+# WheelWise
 
+![WheelWise Logo](https://github.com/user-attachments/assets/22abb1d8-86f3-431c-8358-24867c7e8979)
 
 [![Expo SDK](https://img.shields.io/badge/Expo%20SDK-52.0.30-blue.svg)](https://expo.dev/)
 [![React Native](https://img.shields.io/badge/React%20Native-0.74.6-green.svg)](https://reactnative.dev/)
@@ -8,11 +9,68 @@
 
 > Your accessible travel companion for wheelchair users - Find accessible routes, places, and community support all in one app.
 
-## Overview
+## 🚨 Current Status: Development Phase
 
-WheelWise is a comprehensive accessibility-focused travel companion app built with React Native and Expo. It helps wheelchair users navigate the world with confidence by providing accessible route planning, discovering wheelchair-friendly places, and connecting with a supportive community.
+**⚠️ Important Notice**: This project is currently experiencing critical dependency issues that prevent the app from starting. We recommend setting up a local development environment for full functionality. See [Known Issues](./docs/known-issues.md) for details.
 
-### Key Features
+## 📚 Documentation
+
+Comprehensive documentation is available in the `/docs` folder:
+
+- **[📋 Project Overview](./docs/project-overview.md)** - Vision, goals, and value proposition
+- **[🏗️ Architecture](./docs/architecture.md)** - Technical architecture and technology stack
+- **[✨ Features](./docs/features.md)** - Detailed feature documentation and implementation status
+- **[🗄️ Database Schema](./docs/database-schema.md)** - Complete database structure and relationships
+- **[🔌 API Integration](./docs/api-integration.md)** - External API integrations and implementation
+- **[⚙️ Development Setup](./docs/development-setup.md)** - Complete setup instructions and workflow
+- **[🐛 Known Issues](./docs/known-issues.md)** - Current limitations and workarounds
+- **[🗺️ Future Roadmap](./docs/future-roadmap.md)** - Planned features and development phases
+- **[🚀 Deployment Guide](./docs/deployment-guide.md)** - Production deployment instructions
+- **[🤝 Contributing](./docs/contributing.md)** - How to contribute to the project
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Expo CLI
+- Git
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/wheelwise.git
+cd wheelwise
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys
+
+# Start development server
+npm run dev
+```
+
+### Required Environment Variables
+
+```env
+# Supabase (Required)
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# OpenRouteService (Required for routing)
+EXPO_PUBLIC_OPENROUTESERVICE_API_KEY=your_ors_api_key
+
+# Wheelmap (Optional)
+EXPO_PUBLIC_WHEELMAP_API_KEY=your_wheelmap_api_key
+```
+
+## 🎯 Project Vision
+
+WheelWise is an accessibility-focused travel companion app designed specifically for wheelchair users and people with mobility challenges. Our mission is to make navigation and travel planning more accessible by providing:
 
 - **🗺️ Accessible Route Planning** - Find wheelchair-friendly paths using OpenRouteService API
 - **📍 Discover Accessible Places** - Locate nearby accessible venues using Wheelmap and OpenStreetMap data
@@ -20,7 +78,7 @@ WheelWise is a comprehensive accessibility-focused travel companion app built wi
 - **💬 Community Forum** - Connect with other wheelchair users for tips and support
 - **⚙️ Accessibility Settings** - Customizable preferences for individual needs
 
-## Tech Stack
+## 🏗️ Technology Stack
 
 ### Frontend
 - **React Native** 0.74.6 with Expo SDK 52.0.30
@@ -34,236 +92,140 @@ WheelWise is a comprehensive accessibility-focused travel companion app built wi
 - **Wheelmap API** for accessibility data
 - **Overpass API** for OpenStreetMap queries
 
-### Navigation
-- Tab-based primary navigation
-- Stack navigation within tabs
-- Modal overlays for forms and details
+## 📱 Features Overview
 
-## Project Structure
+### ✅ Implemented Features
 
-```
-app/
-├── _layout.tsx                 # Root layout with Stack navigator
-├── (tabs)/                     # Tab-based navigation group
-│   ├── _layout.tsx            # Tab bar configuration
-│   ├── index.tsx              # Home/Map screen
-│   ├── routes.tsx             # Route planning
-│   ├── places.tsx             # Accessible places discovery
-│   ├── community.tsx          # Community forum and reports
-│   └── profile.tsx            # User settings and preferences
-├── +not-found.tsx             # 404 error page
-hooks/
-├── useFrameworkReady.ts       # Framework initialization hook
-lib/
-├── apis.ts                    # External API integrations
-└── supabase.ts               # Supabase client and types
-supabase/
-└── migrations/               # Database schema migrations
-```
+#### 🏠 Home/Map Screen
+- Location detection and display
+- Quick action buttons for common tasks
+- Nearby accessible places with ratings
+- Real-time hazard reports feed
 
-## Getting Started
+#### 🗺️ Community Features (Fully Functional)
+- **Hazard Reports**: Real-time community reporting of accessibility issues
+- **Forum**: Category-based discussions with real-time updates
+- **Database Integration**: Full Supabase integration with live subscriptions
 
-### Prerequisites
+### 🚧 Partially Implemented
 
-- Node.js 18+ 
-- npm or yarn
-- Expo CLI
-- Git
+#### 🛣️ Route Planning
+- Complete UI with accessibility preferences
+- Multiple route options with scoring
+- Turn-by-turn directions interface
+- *Pending: OpenRouteService API integration*
 
-### Installation
+#### 📍 Place Discovery
+- Search and filtering functionality
+- Category-based browsing
+- Accessibility scoring system
+- *Pending: Wheelmap API integration*
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/wheelwise.git
-   cd wheelwise
-   ```
+#### 👤 User Profile
+- Accessibility settings interface
+- App preferences and configuration
+- *Pending: Authentication system*
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### 📋 Planned Features
+- User authentication and profiles
+- Offline functionality
+- Advanced navigation with voice guidance
+- Social features and networking
+- Business integration tools
 
-3. **Set up environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-   EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   EXPO_PUBLIC_OPENROUTESERVICE_API_KEY=your_ors_api_key
-   EXPO_PUBLIC_WHEELMAP_API_KEY=your_wheelmap_api_key
-   ```
+## 🗄️ Database Schema
 
-4. **Start the development server**
-   ```bash
-   npm run dev
-   ```
+The app uses Supabase with PostgreSQL and includes:
 
-### API Keys Setup
+### Tables
+- **hazard_reports**: Community-reported accessibility issues
+- **forum_posts**: Community discussions and tips
 
-#### Supabase
-1. Create a project at [supabase.com](https://supabase.com)
-2. Get your project URL and anon key from Settings > API
-3. Run the migration in `supabase/migrations/` to set up the database schema
+### Features
+- Row Level Security (RLS) enabled
+- Real-time subscriptions
+- Automatic timestamp management
+- Community voting and engagement systems
 
-#### OpenRouteService
-1. Sign up at [openrouteservice.org](https://openrouteservice.org)
-2. Create an API key for routing services
-3. Free tier includes 2,000 requests/day
+See [Database Schema Documentation](./docs/database-schema.md) for complete details.
 
-#### Wheelmap (Optional)
-1. Request API access at [wheelmap.org](https://wheelmap.org)
-2. Used for enhanced accessibility data
+## 🔌 API Integrations
 
-## Development
+### Current Integrations
+- ✅ **Supabase**: Database and real-time backend
+- ✅ **Expo Location**: Device location services
 
-### Available Scripts
+### Planned Integrations
+- 📋 **OpenRouteService**: Wheelchair-accessible routing
+- 📋 **Wheelmap API**: Crowdsourced accessibility data
+- 📋 **Overpass API**: OpenStreetMap accessibility data
 
-- `npm run dev` - Start Expo development server
-- `npm run build:web` - Build for web deployment
-- `npm run lint` - Run ESLint
+## 🚨 Known Issues
 
-### Code Style
+### Critical Issues
+1. **Expo Router Configuration Error**: App fails to start due to dependency conflicts
+2. **Mock Data Dependencies**: Most features use mock data instead of real APIs
+3. **Missing Authentication**: No user authentication system implemented
 
-- **TypeScript** for all new code
-- **StyleSheet.create** for component styling
-- **Functional components** with hooks
-- **File-based routing** with Expo Router
+See [Known Issues Documentation](./docs/known-issues.md) for complete list and workarounds.
 
-### Component Guidelines
+## 🗺️ Development Roadmap
 
-```typescript
-// Example component structure
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+### Phase 1: Foundation (Immediate - 1 Month)
+- Fix critical dependency issues
+- Complete API integrations
+- Implement authentication system
 
-export default function ExampleScreen() {
-  const [state, setState] = useState('');
+### Phase 2: Core Features (1-3 Months)
+- Enhanced navigation with voice guidance
+- Offline functionality
+- Advanced community features
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Screen Title</Text>
-      </View>
-    </SafeAreaView>
-  );
-}
+### Phase 3: Advanced Features (3-6 Months)
+- AI-powered recommendations
+- Social networking features
+- Business integration tools
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  content: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-});
-```
+See [Future Roadmap Documentation](./docs/future-roadmap.md) for detailed timeline.
 
-## Database Schema
+## 🤝 Contributing
 
-The app uses Supabase with the following main tables:
+We welcome contributions from developers, designers, accessibility experts, and community members!
 
-### `hazard_reports`
-- Community-reported accessibility issues
-- Real-time status updates
-- Geographic coordinates for mapping
+### How to Contribute
+1. Read our [Contributing Guide](./docs/contributing.md)
+2. Check [Known Issues](./docs/known-issues.md) for areas needing help
+3. Review [Development Setup](./docs/development-setup.md) for technical requirements
+4. Join our community discussions
 
-### `forum_posts`
-- Community discussions and tips
-- Categorized by topic (travel, equipment, etc.)
-- Like and reply functionality
+### Types of Contributions
+- 🐛 Bug reports and fixes
+- ✨ Feature development
+- 📝 Documentation improvements
+- 🎨 Design and UX enhancements
+- ♿ Accessibility testing and improvements
+- 🌍 Internationalization and localization
 
-## API Integration
-
-### Route Planning
-```typescript
-import { openRouteServiceApi } from '@/lib/apis';
-
-const route = await openRouteServiceApi.getDirections({
-  coordinates: [[startLon, startLat], [endLon, endLat]],
-  profile: 'wheelchair',
-  options: {
-    avoid_features: ['steps'],
-    surface_type: ['paved']
-  }
-});
-```
-
-### Accessibility Data
-```typescript
-import { wheelmapApi } from '@/lib/apis';
-
-const places = await wheelmapApi.searchNodes(
-  latitude,
-  longitude,
-  1000, // radius in meters
-  'yes' // wheelchair accessibility
-);
-```
-
-## Platform Support
-
-- **Web** - Primary development platform
-- **iOS** - Full native support
-- **Android** - Full native support
-
-### Web Limitations
-- No native haptic feedback
-- Limited location services
-- No camera access in browser
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow the existing code style and patterns
-- Add TypeScript types for all new code
-- Test on multiple platforms when possible
-- Update documentation for new features
-- Ensure accessibility compliance
-
-## Deployment
-
-### Web Deployment
-```bash
-npm run build:web
-# Deploy the dist/ folder to your hosting provider
-```
-
-### Mobile Deployment
-1. Configure app.json for your target platforms
-2. Use EAS Build for production builds
-3. Submit to app stores following platform guidelines
-
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - [Wheelmap.org](https://wheelmap.org) for accessibility data
 - [OpenRouteService](https://openrouteservice.org) for routing capabilities
 - [OpenStreetMap](https://openstreetmap.org) community for map data
 - Accessibility advocates and wheelchair users who inspire this work
 
-## Support
+## 📞 Support
 
-- 📧 Email: support@wheelwise.com
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/wheelwise/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/wheelwise/discussions)
+- 📧 **Email**: support@wheelwise.com
+- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/wheelwise/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/wheelwise/discussions)
+- 📚 **Documentation**: [Project Documentation](./docs/README.md)
 
 ---
 
 **Made with ❤️ for the accessibility community**
+
+*Building a more accessible world, one route at a time.*
