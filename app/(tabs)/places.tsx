@@ -9,7 +9,21 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Filter, MapPin, Star, Accessibility as Wheelchair, ListRestart as Restroom, Car, Utensils, ShoppingBag, Coffee, Building, Heart, Navigation } from 'lucide-react-native';
+import { 
+  Search, 
+  Filter, 
+  MapPin, 
+  Star, 
+  Wheelchair, 
+  Restroom, 
+  Car, 
+  Utensils, 
+  ShoppingBag, 
+  Coffee, 
+  Building, 
+  Heart, 
+  Navigation 
+} from '@/components/LucideIcon';
 
 interface AccessiblePlace {
   id: string;
