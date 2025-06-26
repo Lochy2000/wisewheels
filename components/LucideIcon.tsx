@@ -41,43 +41,7 @@ import {
 } from 'lucide-react';
 
 // Explicit imports for native (lucide-react-native)
-import {
-  MapPin as MapPinNative,
-  Route as RouteNative,
-  Search as SearchNative,
-  MessageSquare as MessageSquareNative,
-  Settings as SettingsNative,
-  Accessibility as AccessibilityNative,
-  AlertTriangle as AlertTriangleNative,
-  Plus as PlusNative,
-  Heart as HeartNative,
-  MessageCircle as MessageCircleNative,
-  Share as ShareNative,
-  Clock as ClockNative,
-  CheckCircle as CheckCircleNative,
-  X as XNative,
-  Send as SendNative,
-  Navigation as NavigationNative,
-  Star as StarNative,
-  ChevronRight as ChevronRightNative,
-  Zap as ZapNative,
-  Filter as FilterNative,
-  Utensils as UtensilsNative,
-  ShoppingBag as ShoppingBagNative,
-  Coffee as CoffeeNative,
-  Building as BuildingNative,
-  Car as CarNative,
-  User as UserNative,
-  Bell as BellNative,
-  Shield as ShieldNative,
-  HelpCircle as HelpCircleNative,
-  Moon as MoonNative,
-  Volume2 as Volume2Native,
-  LogOut as LogOutNative,
-  RotateCcw as RotateCcwNative,
-  AlertCircle as AlertCircleNative,
-  ArrowRight as ArrowRightNative,
-} from 'lucide-react-native';
+import { MapPin as MapPinNative, Route as RouteNative, Search as SearchNative, MessageSquare as MessageSquareNative, Settings as SettingsNative, Accessibility as AccessibilityNative, TriangleAlert as AlertTriangleNative, Plus as PlusNative, Heart as HeartNative, MessageCircle as MessageCircleNative, Share as ShareNative, Clock as ClockNative, CircleCheck as CheckCircleNative, X as XNative, Send as SendNative, Navigation as NavigationNative, Star as StarNative, ChevronRight as ChevronRightNative, Zap as ZapNative, Filter as FilterNative, Utensils as UtensilsNative, ShoppingBag as ShoppingBagNative, Coffee as CoffeeNative, Building as BuildingNative, Car as CarNative, User as UserNative, Bell as BellNative, Shield as ShieldNative, CircleHelp as HelpCircleNative, Moon as MoonNative, Volume2 as Volume2Native, LogOut as LogOutNative, RotateCcw as RotateCcwNative, CircleAlert as AlertCircleNative, ArrowRight as ArrowRightNative } from 'lucide-react-native';
 
 interface IconProps {
   size?: number;
