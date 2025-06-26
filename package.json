@@ -4,10 +4,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "start": "EXPO_NO_TELEMETRY=1 expo start",
     "dev": "EXPO_NO_TELEMETRY=1 expo start",
     "build:web": "expo export --platform web",
     "lint": "expo lint"
+  },
+  "resolutions": {
+    "metro": "0.76.7"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
