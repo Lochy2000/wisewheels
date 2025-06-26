@@ -5,7 +5,7 @@ import {
   Search, 
   MessageSquare, 
   Settings 
-} from '@/components/LucideIcon';
+} from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
