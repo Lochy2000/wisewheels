@@ -10,8 +10,17 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import LinearGradient from 'expo-linear-gradient';
-import { MapPin, Armchair as Wheelchair, TriangleAlert as AlertTriangle, Navigation, Search, Star, Clock, ChevronRight } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { 
+  MapPin, 
+  Wheelchair, 
+  AlertTriangle, 
+  Navigation, 
+  Search,
+  Star,
+  Clock,
+  ChevronRight
+} from '@/components/LucideIcon';
 import * as Location from 'expo-location';
 
 const { width, height } = Dimensions.get('window');
