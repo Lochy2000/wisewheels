@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
@@ -23,30 +24,7 @@ import {
   X,
   Send
 } from '@/components/LucideIcon';
-
-interface HazardReport {
-  id: string;
-  location: string;
-  issue: string;
-  description: string;
-  status: 'active' | 'in-progress' | 'resolved';
-  reportedAt: string;
-  reportedBy: string;
-  upvotes: number;
-  hasUpvoted: boolean;
-}
-
-interface ForumPost {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  postedAt: string;
-  likes: number;
-  replies: number;
-  hasLiked: boolean;
-  category: 'general' | 'travel-tips' | 'accessibility' | 'equipment';
-}
+import { hazardReportsApi, forumApi, subscriptions, HazardReport, ForumPost } from '@/lib/database';
 
 export default function CommunityScreen() {
   const [activeTab, setActiveTab] = useState<'reports' | 'forum'>('reports');
@@ -54,6 +32,8 @@ export default function CommunityScreen() {
   const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [newReport, setNewReport] = useState({
     location: '',
     issue: '',
@@ -66,166 +46,119 @@ export default function CommunityScreen() {
   });
 
   useEffect(() => {
-    loadHazardReports();
-    loadForumPosts();
+    loadData();
+    
+    // Set up real-time subscriptions
+    const hazardSub = subscriptions.subscribeToHazardReports(setHazardReports);
+    const forumSub = subscriptions.subscribeToForumPosts(setForumPosts);
+
+    return () => {
+      hazardSub.unsubscribe();
+      forumSub.unsubscribe();
+    };
   }, []);
 
-  const loadHazardReports = () => {
-    // Mock data - in real app, this would fetch from Supabase
-    const mockReports: HazardReport[] = [
-      {
-        id: '1',
-        location: 'Main Street Station',
-        issue: 'Elevator out of service',
-        description: 'The main elevator has been broken for 2 days. Using the service elevator requires asking staff.',
-        status: 'active',
-        reportedAt: '2 hours ago',
-        reportedBy: 'Sarah M.',
-        upvotes: 8,
-        hasUpvoted: false
-      },
-      {
-        id: '2',
-        location: 'Central Park West Entrance',
-        issue: 'Construction blocking path',
-        description: 'Temporary construction has blocked the accessible path. Alternative route via east entrance is available.',
-        status: 'in-progress',
-        reportedAt: '1 day ago',
-        reportedBy: 'Mike R.',
-        upvotes: 12,
-        hasUpvoted: true
-      },
-      {
-        id: '3',
-        location: 'City Library',
-        issue: 'Automatic door repaired',
-        description: 'The front entrance automatic door is now working properly again.',
-        status: 'resolved',
-        reportedAt: '3 days ago',
-        reportedBy: 'Lisa K.',
-        upvotes: 5,
-        hasUpvoted: false
-      }
-    ];
-    setHazardReports(mockReports);
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [reports, posts] = await Promise.all([
+        hazardReportsApi.getAll(),
+        forumApi.getAll()
+      ]);
+      
+      setHazardReports(reports);
+      setForumPosts(posts);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      Alert.alert('Error', 'Failed to load community data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loadForumPosts = () => {
-    // Mock data - in real app, this would fetch from Supabase
-    const mockPosts: ForumPost[] = [
-      {
-        id: '1',
-        title: 'Best accessible hotels in London?',
-        content: 'Planning a trip next month and looking for recommendations for wheelchair-friendly hotels with good accessibility features.',
-        author: 'TravelLover23',
-        postedAt: '3 hours ago',
-        likes: 7,
-        replies: 12,
-        hasLiked: false,
-        category: 'travel-tips'
-      },
-      {
-        id: '2',
-        title: 'Lightweight wheelchair recommendations',
-        content: 'My current chair is getting heavy for daily use. Looking for lightweight options that are still durable.',
-        author: 'ActiveLife',
-        postedAt: '5 hours ago',
-        likes: 15,
-        replies: 8,
-        hasLiked: true,
-        category: 'equipment'
-      },
-      {
-        id: '3',
-        title: 'New accessible restaurant opened downtown',
-        content: 'Just visited "The Inclusive Table" - amazing food and excellent accessibility. Wide doorways, accessible bathrooms, and staff trained in accessibility awareness.',
-        author: 'FoodieWheels',
-        postedAt: '1 day ago',
-        likes: 23,
-        replies: 6,
-        hasLiked: false,
-        category: 'general'
-      }
-    ];
-    setForumPosts(mockPosts);
-  };
-
-  const submitHazardReport = () => {
+  const submitHazardReport = async () => {
     if (!newReport.location || !newReport.issue) {
       Alert.alert('Missing information', 'Please fill in at least the location and issue.');
       return;
     }
 
-    // In real app, this would save to Supabase
-    const report: HazardReport = {
-      id: Date.now().toString(),
-      location: newReport.location,
-      issue: newReport.issue,
-      description: newReport.description,
-      status: 'active',
-      reportedAt: 'Just now',
-      reportedBy: 'You',
-      upvotes: 0,
-      hasUpvoted: false
-    };
+    try {
+      setSubmitting(true);
+      const report = await hazardReportsApi.create({
+        location: newReport.location,
+        issue: newReport.issue,
+        description: newReport.description || null,
+        status: 'active',
+        reported_by: 'Anonymous User', // In real app, this would be the authenticated user
+        latitude: null,
+        longitude: null
+      });
 
-    setHazardReports([report, ...hazardReports]);
-    setNewReport({ location: '', issue: '', description: '' });
-    setShowReportModal(false);
-    Alert.alert('Report submitted', 'Thank you for helping the community stay informed!');
+      if (report) {
+        setNewReport({ location: '', issue: '', description: '' });
+        setShowReportModal(false);
+        Alert.alert('Success', 'Thank you for helping the community stay informed!');
+        // Data will be updated via real-time subscription
+      } else {
+        Alert.alert('Error', 'Failed to submit report. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const submitForumPost = () => {
+  const submitForumPost = async () => {
     if (!newPost.title || !newPost.content) {
       Alert.alert('Missing information', 'Please provide both a title and content for your post.');
       return;
     }
 
-    // In real app, this would save to Supabase
-    const post: ForumPost = {
-      id: Date.now().toString(),
-      title: newPost.title,
-      content: newPost.content,
-      author: 'You',
-      postedAt: 'Just now',
-      likes: 0,
-      replies: 0,
-      hasLiked: false,
-      category: newPost.category
-    };
+    try {
+      setSubmitting(true);
+      const post = await forumApi.create({
+        title: newPost.title,
+        content: newPost.content,
+        author: 'Anonymous User', // In real app, this would be the authenticated user
+        category: newPost.category
+      });
 
-    setForumPosts([post, ...forumPosts]);
-    setNewPost({ title: '', content: '', category: 'general' });
-    setShowPostModal(false);
-    Alert.alert('Post published', 'Your post has been shared with the community!');
+      if (post) {
+        setNewPost({ title: '', content: '', category: 'general' });
+        setShowPostModal(false);
+        Alert.alert('Success', 'Your post has been shared with the community!');
+        // Data will be updated via real-time subscription
+      } else {
+        Alert.alert('Error', 'Failed to publish post. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting post:', error);
+      Alert.alert('Error', 'Failed to publish post. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const toggleUpvote = (reportId: string) => {
-    setHazardReports(reports =>
-      reports.map(report =>
-        report.id === reportId
-          ? {
-              ...report,
-              upvotes: report.hasUpvoted ? report.upvotes - 1 : report.upvotes + 1,
-              hasUpvoted: !report.hasUpvoted
-            }
-          : report
-      )
-    );
+  const toggleUpvote = async (reportId: string) => {
+    try {
+      await hazardReportsApi.incrementUpvotes(reportId);
+      // Data will be updated via real-time subscription
+    } catch (error) {
+      console.error('Error upvoting report:', error);
+      Alert.alert('Error', 'Failed to upvote report. Please try again.');
+    }
   };
 
-  const toggleLike = (postId: string) => {
-    setForumPosts(posts =>
-      posts.map(post =>
-        post.id === postId
-          ? {
-              ...post,
-              likes: post.hasLiked ? post.likes - 1 : post.likes + 1,
-              hasLiked: !post.hasLiked
-            }
-          : post
-      )
-    );
+  const toggleLike = async (postId: string) => {
+    try {
+      await forumApi.incrementLikes(postId);
+      // Data will be updated via real-time subscription
+    } catch (error) {
+      console.error('Error liking post:', error);
+      Alert.alert('Error', 'Failed to like post. Please try again.');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -246,6 +179,29 @@ export default function CommunityScreen() {
     }
   };
 
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#4F46E5" />
+          <Text style={styles.loadingText}>Loading community data...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -262,7 +218,7 @@ export default function CommunityScreen() {
         >
           <AlertTriangle size={20} color={activeTab === 'reports' ? '#4F46E5' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'reports' && styles.tabTextActive]}>
-            Hazard Reports
+            Hazard Reports ({hazardReports.length})
           </Text>
         </TouchableOpacity>
         
@@ -272,7 +228,7 @@ export default function CommunityScreen() {
         >
           <MessageSquare size={20} color={activeTab === 'forum' ? '#4F46E5' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'forum' && styles.tabTextActive]}>
-            Forum
+            Forum ({forumPosts.length})
           </Text>
         </TouchableOpacity>
       </View>
@@ -281,100 +237,108 @@ export default function CommunityScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 'reports' ? (
           <View style={styles.reportsSection}>
-            {hazardReports.map((report) => (
-              <View key={report.id} style={styles.reportCard}>
-                <View style={styles.reportHeader}>
-                  <View style={styles.reportInfo}>
-                    <View style={styles.locationRow}>
-                      <MapPin size={16} color="#6B7280" />
-                      <Text style={styles.reportLocation}>{report.location}</Text>
-                    </View>
-                    <Text style={styles.reportIssue}>{report.issue}</Text>
-                  </View>
-                  <View style={[
-                    styles.statusBadge,
-                    { backgroundColor: getStatusColor(report.status) }
-                  ]}>
-                    <Text style={styles.statusText}>
-                      {report.status.replace('-', ' ')}
-                    </Text>
-                  </View>
-                </View>
-
-                <Text style={styles.reportDescription}>{report.description}</Text>
-
-                <View style={styles.reportFooter}>
-                  <View style={styles.reportMeta}>
-                    <Clock size={14} color="#9CA3AF" />
-                    <Text style={styles.metaText}>{report.reportedAt}</Text>
-                    <Text style={styles.metaText}>by {report.reportedBy}</Text>
-                  </View>
-                  
-                  <TouchableOpacity
-                    style={styles.upvoteButton}
-                    onPress={() => toggleUpvote(report.id)}
-                  >
-                    <Heart size={16} color={report.hasUpvoted ? '#EF4444' : '#9CA3AF'} />
-                    <Text style={[
-                      styles.upvoteText,
-                      report.hasUpvoted && { color: '#EF4444' }
-                    ]}>
-                      {report.upvotes}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+            {hazardReports.length === 0 ? (
+              <View style={styles.emptyState}>
+                <AlertTriangle size={48} color="#9CA3AF" />
+                <Text style={styles.emptyStateTitle}>No hazard reports yet</Text>
+                <Text style={styles.emptyStateText}>Be the first to report an accessibility issue in your area</Text>
               </View>
-            ))}
+            ) : (
+              hazardReports.map((report) => (
+                <View key={report.id} style={styles.reportCard}>
+                  <View style={styles.reportHeader}>
+                    <View style={styles.reportInfo}>
+                      <View style={styles.locationRow}>
+                        <MapPin size={16} color="#6B7280" />
+                        <Text style={styles.reportLocation}>{report.location}</Text>
+                      </View>
+                      <Text style={styles.reportIssue}>{report.issue}</Text>
+                    </View>
+                    <View style={[
+                      styles.statusBadge,
+                      { backgroundColor: getStatusColor(report.status) }
+                    ]}>
+                      <Text style={styles.statusText}>
+                        {report.status.replace('-', ' ')}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {report.description && (
+                    <Text style={styles.reportDescription}>{report.description}</Text>
+                  )}
+
+                  <View style={styles.reportFooter}>
+                    <View style={styles.reportMeta}>
+                      <Clock size={14} color="#9CA3AF" />
+                      <Text style={styles.metaText}>{formatTimeAgo(report.reported_at)}</Text>
+                      <Text style={styles.metaText}>by {report.reported_by}</Text>
+                    </View>
+                    
+                    <TouchableOpacity
+                      style={styles.upvoteButton}
+                      onPress={() => toggleUpvote(report.id)}
+                    >
+                      <Heart size={16} color="#9CA3AF" />
+                      <Text style={styles.upvoteText}>{report.upvotes}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
         ) : (
           <View style={styles.forumSection}>
-            {forumPosts.map((post) => (
-              <View key={post.id} style={styles.postCard}>
-                <View style={styles.postHeader}>
-                  <View style={styles.postInfo}>
-                    <Text style={styles.postTitle}>{post.title}</Text>
-                    <View style={styles.postMeta}>
-                      <Text style={styles.authorText}>{post.author}</Text>
-                      <Text style={styles.separator}>•</Text>
-                      <Text style={styles.timeText}>{post.postedAt}</Text>
+            {forumPosts.length === 0 ? (
+              <View style={styles.emptyState}>
+                <MessageSquare size={48} color="#9CA3AF" />
+                <Text style={styles.emptyStateTitle}>No forum posts yet</Text>
+                <Text style={styles.emptyStateText}>Start a conversation with the community</Text>
+              </View>
+            ) : (
+              forumPosts.map((post) => (
+                <View key={post.id} style={styles.postCard}>
+                  <View style={styles.postHeader}>
+                    <View style={styles.postInfo}>
+                      <Text style={styles.postTitle}>{post.title}</Text>
+                      <View style={styles.postMeta}>
+                        <Text style={styles.authorText}>{post.author}</Text>
+                        <Text style={styles.separator}>•</Text>
+                        <Text style={styles.timeText}>{formatTimeAgo(post.posted_at)}</Text>
+                      </View>
+                    </View>
+                    <View style={[
+                      styles.categoryBadge,
+                      { backgroundColor: getCategoryColor(post.category) }
+                    ]}>
+                      <Text style={styles.categoryText}>{post.category}</Text>
                     </View>
                   </View>
-                  <View style={[
-                    styles.categoryBadge,
-                    { backgroundColor: getCategoryColor(post.category) }
-                  ]}>
-                    <Text style={styles.categoryText}>{post.category}</Text>
+
+                  <Text style={styles.postContent}>{post.content}</Text>
+
+                  <View style={styles.postActions}>
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={() => toggleLike(post.id)}
+                    >
+                      <Heart size={16} color="#9CA3AF" />
+                      <Text style={styles.actionText}>{post.likes}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.actionButton}>
+                      <MessageCircle size={16} color="#9CA3AF" />
+                      <Text style={styles.actionText}>{post.replies}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.actionButton}>
+                      <Share size={16} color="#9CA3AF" />
+                      <Text style={styles.actionText}>Share</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
-
-                <Text style={styles.postContent}>{post.content}</Text>
-
-                <View style={styles.postActions}>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => toggleLike(post.id)}
-                  >
-                    <Heart size={16} color={post.hasLiked ? '#EF4444' : '#9CA3AF'} />
-                    <Text style={[
-                      styles.actionText,
-                      post.hasLiked && { color: '#EF4444' }
-                    ]}>
-                      {post.likes}
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.actionButton}>
-                    <MessageCircle size={16} color="#9CA3AF" />
-                    <Text style={styles.actionText}>{post.replies}</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.actionButton}>
-                    <Share size={16} color="#9CA3AF" />
-                    <Text style={styles.actionText}>Share</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
+              ))
+            )}
           </View>
         )}
 
@@ -402,8 +366,15 @@ export default function CommunityScreen() {
               <X size={24} color="#6B7280" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>Report Hazard</Text>
-            <TouchableOpacity onPress={submitHazardReport}>
-              <Send size={24} color="#4F46E5" />
+            <TouchableOpacity 
+              onPress={submitHazardReport}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#4F46E5" />
+              ) : (
+                <Send size={24} color="#4F46E5" />
+              )}
             </TouchableOpacity>
           </View>
 
@@ -455,8 +426,15 @@ export default function CommunityScreen() {
               <X size={24} color="#6B7280" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>New Post</Text>
-            <TouchableOpacity onPress={submitForumPost}>
-              <Send size={24} color="#4F46E5" />
+            <TouchableOpacity 
+              onPress={submitForumPost}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#4F46E5" />
+              ) : (
+                <Send size={24} color="#4F46E5" />
+              )}
             </TouchableOpacity>
           </View>
 
@@ -522,6 +500,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
+  },
   header: {
     padding: 20,
     backgroundColor: '#FFFFFF',
@@ -571,6 +559,27 @@ const styles = StyleSheet.create({
   },
   reportsSection: {
     padding: 20,
+  },
+  forumSection: {
+    padding: 20,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   reportCard: {
     backgroundColor: '#FFFFFF',
@@ -654,9 +663,6 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontWeight: '500',
     marginLeft: 4,
-  },
-  forumSection: {
-    padding: 20,
   },
   postCard: {
     backgroundColor: '#FFFFFF',

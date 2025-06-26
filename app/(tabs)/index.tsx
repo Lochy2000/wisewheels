@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,6 +23,7 @@ import {
   ChevronRight
 } from '@/components/LucideIcon';
 import * as Location from 'expo-location';
+import { hazardReportsApi, HazardReport } from '@/lib/database';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,20 +37,12 @@ interface AccessiblePlace {
   address: string;
 }
 
-interface HazardReport {
-  id: string;
-  location: string;
-  issue: string;
-  status: 'active' | 'in-progress' | 'resolved';
-  reportedAt: string;
-  description: string;
-}
-
 export default function MapScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentLocation, setCurrentLocation] = useState<string>('Getting location...');
   const [nearbyPlaces, setNearbyPlaces] = useState<AccessiblePlace[]>([]);
   const [recentHazards, setRecentHazards] = useState<HazardReport[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getCurrentLocation();
@@ -61,6 +55,7 @@ export default function MapScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission denied', 'Allow location access to use WheelWise features.');
+        setCurrentLocation('Location unavailable');
         return;
       }
 
@@ -113,27 +108,17 @@ export default function MapScreen() {
     setNearbyPlaces(mockPlaces);
   };
 
-  const loadRecentHazards = () => {
-    // Mock data - in real app, this would fetch from Supabase
-    const mockHazards: HazardReport[] = [
-      {
-        id: '1',
-        location: 'Main St Subway Station',
-        issue: 'Elevator out of service',
-        status: 'active',
-        reportedAt: '2 hours ago',
-        description: 'Main elevator not working, use alternative entrance',
-      },
-      {
-        id: '2',
-        location: 'Park Avenue',
-        issue: 'Construction blocking sidewalk',
-        status: 'in-progress',
-        reportedAt: '1 day ago',
-        description: 'Temporary ramp available on south side',
-      },
-    ];
-    setRecentHazards(mockHazards);
+  const loadRecentHazards = async () => {
+    try {
+      const hazards = await hazardReportsApi.getAll();
+      // Get only the most recent 3 hazards
+      setRecentHazards(hazards.slice(0, 3));
+    } catch (error) {
+      console.error('Error loading hazards:', error);
+      setRecentHazards([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getAccessibilityColor = (rating: string) => {
@@ -152,6 +137,18 @@ export default function MapScreen() {
       case 'resolved': return '#10B981';
       default: return '#6B7280';
     }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return date.toLocaleDateString();
   };
 
   return (
@@ -288,28 +285,42 @@ export default function MapScreen() {
             </TouchableOpacity>
           </View>
 
-          {recentHazards.map((hazard) => (
-            <View key={hazard.id} style={styles.hazardCard}>
-              <View style={styles.hazardHeader}>
-                <View style={styles.hazardInfo}>
-                  <Text style={styles.hazardLocation}>{hazard.location}</Text>
-                  <Text style={styles.hazardIssue}>{hazard.issue}</Text>
-                </View>
-                <View style={styles.hazardMeta}>
-                  <View style={[
-                    styles.statusBadge,
-                    { backgroundColor: getStatusColor(hazard.status) }
-                  ]}>
-                    <Text style={styles.statusText}>
-                      {hazard.status.replace('-', ' ')}
-                    </Text>
-                  </View>
-                  <Text style={styles.timeText}>{hazard.reportedAt}</Text>
-                </View>
-              </View>
-              <Text style={styles.hazardDescription}>{hazard.description}</Text>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#4F46E5" />
+              <Text style={styles.loadingText}>Loading hazard reports...</Text>
             </View>
-          ))}
+          ) : recentHazards.length === 0 ? (
+            <View style={styles.emptyState}>
+              <AlertTriangle size={32} color="#9CA3AF" />
+              <Text style={styles.emptyStateText}>No recent hazard reports</Text>
+            </View>
+          ) : (
+            recentHazards.map((hazard) => (
+              <View key={hazard.id} style={styles.hazardCard}>
+                <View style={styles.hazardHeader}>
+                  <View style={styles.hazardInfo}>
+                    <Text style={styles.hazardLocation}>{hazard.location}</Text>
+                    <Text style={styles.hazardIssue}>{hazard.issue}</Text>
+                  </View>
+                  <View style={styles.hazardMeta}>
+                    <View style={[
+                      styles.statusBadge,
+                      { backgroundColor: getStatusColor(hazard.status) }
+                    ]}>
+                      <Text style={styles.statusText}>
+                        {hazard.status.replace('-', ' ')}
+                      </Text>
+                    </View>
+                    <Text style={styles.timeText}>{formatTimeAgo(hazard.reported_at)}</Text>
+                  </View>
+                </View>
+                {hazard.description && (
+                  <Text style={styles.hazardDescription}>{hazard.description}</Text>
+                )}
+              </View>
+            ))
+          )}
         </View>
 
         {/* Bottom spacing for tab bar */}
@@ -523,6 +534,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginLeft: 12,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginTop: 8,
   },
   hazardCard: {
     backgroundColor: '#FFFFFF',
