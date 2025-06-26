@@ -23,7 +23,7 @@ import {
   Accessibility,
   ChevronRight,
   LogOut
-} from 'lucide-react-native';
+} from '@/components/LucideIcon';
 
 interface Setting {
   id: string;

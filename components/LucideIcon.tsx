@@ -14,39 +14,49 @@ const createIcon = (iconName: string) => {
 
     if (Platform.OS === 'web') {
       // Use lucide-react for web
-      const LucideReact = require('lucide-react');
-      const WebIcon = LucideReact[iconName];
-      
-      if (!WebIcon) {
-        console.warn(`Icon ${iconName} not found in lucide-react`);
+      try {
+        const LucideReact = require('lucide-react');
+        const WebIcon = LucideReact[iconName];
+        
+        if (!WebIcon) {
+          console.warn(`Icon ${iconName} not found in lucide-react`);
+          return null;
+        }
+
+        return React.createElement(WebIcon, {
+          ref,
+          width: size,
+          height: size,
+          color,
+          strokeWidth,
+          ...rest
+        });
+      } catch (error) {
+        console.warn(`Error loading icon ${iconName}:`, error);
         return null;
       }
-
-      return React.createElement(WebIcon, {
-        ref,
-        width: size,
-        height: size,
-        color,
-        strokeWidth,
-        ...rest
-      });
     } else {
       // Use lucide-react-native for mobile
-      const LucideReactNative = require('lucide-react-native');
-      const NativeIcon = LucideReactNative[iconName];
-      
-      if (!NativeIcon) {
-        console.warn(`Icon ${iconName} not found in lucide-react-native`);
+      try {
+        const LucideReactNative = require('lucide-react-native');
+        const NativeIcon = LucideReactNative[iconName];
+        
+        if (!NativeIcon) {
+          console.warn(`Icon ${iconName} not found in lucide-react-native`);
+          return null;
+        }
+
+        return React.createElement(NativeIcon, {
+          ref,
+          size,
+          color,
+          strokeWidth,
+          ...rest
+        });
+      } catch (error) {
+        console.warn(`Error loading icon ${iconName}:`, error);
         return null;
       }
-
-      return React.createElement(NativeIcon, {
-        ref,
-        size,
-        color,
-        strokeWidth,
-        ...rest
-      });
     }
   });
 
@@ -81,8 +91,7 @@ export const ShoppingBag = createIcon('ShoppingBag');
 export const Coffee = createIcon('Coffee');
 export const Building = createIcon('Building');
 export const Car = createIcon('Car');
-export const ListRestart = createIcon('ListRestart');
-export const Restroom = createIcon('ListRestart'); // Use ListRestart for Restroom
+export const Restroom = createIcon('Building'); // Use Building for Restroom
 export const User = createIcon('User');
 export const Bell = createIcon('Bell');
 export const Shield = createIcon('Shield');

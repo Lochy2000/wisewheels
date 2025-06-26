@@ -22,7 +22,7 @@ import {
   CheckCircle,
   X,
   Send
-} from 'lucide-react-native';
+} from '@/components/LucideIcon';
 
 interface HazardReport {
   id: string;

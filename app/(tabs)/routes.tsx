@@ -19,7 +19,7 @@ import {
   AlertCircle,
   CheckCircle,
   ArrowRight
-} from 'lucide-react-native';
+} from '@/components/LucideIcon';
 
 interface RouteOption {
   id: string;
