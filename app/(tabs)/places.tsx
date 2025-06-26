@@ -14,7 +14,7 @@ import {
   Filter,
   MapPin,
   Star,
-  Wheelchair,
+  Accessibility as Wheelchair,
   Restroom,
   Car,
   Utensils,
